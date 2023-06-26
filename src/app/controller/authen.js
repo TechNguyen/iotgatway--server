@@ -2,8 +2,8 @@ const Account = require('../models/account')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const cookie = require('cookie-parser')
-class Login {
-    async signin(req,res,next) {
+class Authen {
+    async login(req,res,next) {
         try {
             // get data from form
             const  {username, password} = req.body
@@ -14,8 +14,10 @@ class Login {
             // find in db
             const account = await Account.findOne({username, password})
             // match password
-            const hashPass = await bcrypt.compare(password, account.password)
-            if(account && hashPass) {
+
+            // const hashPass = await bcrypt.compare(password, account.password)
+
+            if(account) {
                 // take accesstoken
                 const token = jwt.sign({
                     id: account._id
@@ -30,16 +32,15 @@ class Login {
                     httpOnly: true
                 }
                 res.status(200).cookie("token", token, options).json({
-                    success: true,
                     token,
-                    account
+                    username: account.username
                 })
             }
         } catch(error) {
-            res.status(403).json({success: false, message: error})
+            res.status(403).json({success: false, message: error.message})
         }
     }
 }
 
 
-module.exports = new Login();
+module.exports = new Authen();

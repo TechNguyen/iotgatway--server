@@ -1,5 +1,5 @@
 const loginRouter = require('./login')
 function Route(app) {
-    app.use('/', loginRouter)
+    app.use('/api', loginRouter)
 }
 module.exports = Route

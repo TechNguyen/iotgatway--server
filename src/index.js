@@ -7,11 +7,11 @@ const path = require("path");
 const port = process.env.PORT;
 const morgan = require("morgan");
 const route = require("./router");
-
 const db = require("./config/database");
 const bodyParser = require('body-parser')
 const cookParser = require('cookie-parser')
 const server = http.createServer(app);
+const cors = require('cors')
 // Connect database
 db.connect();
 //overide Header 
@@ -23,6 +23,7 @@ app.use(express.json())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(cookParser())
+app.use(cors())
 
 
 

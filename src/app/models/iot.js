@@ -30,6 +30,4 @@ const iot = new Schema({
     timestamps: true
 })
 const accModels = mongoose.model('iot',iot)
-
-
 module.exports = accModels
