@@ -16,7 +16,7 @@ class Authen {
             // match password
 
             // const hashPass = await bcrypt.compare(password, account.password)
-
+            console.log(account);
             if(account) {
                 // take accesstoken
                 const token = jwt.sign({

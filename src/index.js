@@ -13,7 +13,10 @@ const cookParser = require('cookie-parser')
 const server = http.createServer(app);
 const cors = require('cors')
 // Connect database
+
 db.connect();
+
+console.log(db.connect());
 //overide Header 
 app.use(methodOverride('_method'))
 // HTTP logger
