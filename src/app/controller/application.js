@@ -75,7 +75,6 @@ class Application {
                 }
 
             }
-            console.log(sqlString);
             const request = new db.sql.Request();
             request.query(sqlString, (err, data) => {
                 if (err) {

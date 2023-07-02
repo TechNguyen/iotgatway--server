@@ -1,10 +1,15 @@
-const sql = require("mssql/msnodesqlv8");
+const sql = require('mssql');
 const sqlConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PWD,
     server: process.env.DB_SERVER,
-    driver: "msnodesqlv8",
+    options: {
+        encrypt: true,
+        trustServerCertificate: true,
+    },
 }
+
+
 async function connect() {
     try {
        await sql.connect(sqlConfig);
