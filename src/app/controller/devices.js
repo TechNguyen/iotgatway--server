@@ -133,14 +133,14 @@ class Device {
                 sqlString = `
                 UPDATE DeviceDB.dbo.Device
     
-                SET MAC = '${Mac}',Name = '${Name}',AppID = ${parseInt(ApplicationID)}, Description = '${Description}', UpdatedAt = CURRENT_TIMESTAMP
+                SET MAC = '${Mac}',Name = '${Name}',AppID = ${parseInt(ApplicationID)}, Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
     
                 WHERE ID = ${ID}`
             } else {
                 sqlString = `
                 UPDATE DeviceDB.dbo.Device
     
-                SET MAC = '${Mac}',Name = '${Name}',AppID = NULL, Description = '${Description}', UpdatedAt = CURRENT_TIMESTAMP
+                SET MAC = '${Mac}',Name = '${Name}',AppID = NULL, Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
     
                 WHERE ID = ${ID}`
             }

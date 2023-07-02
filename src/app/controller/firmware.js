@@ -16,56 +16,45 @@ class Firmware {
             });
         } catch(error) {
             res.status(403).json({
-                success: false,
+                success: false,  
                 message: error
             })
         }
     }
     async createOneFirmware(req,res) {
         try {
-            const { ID, Mac, Name, ApplicationID, Description } = req.body;
-            const sqlStringCheckAppli = `Select count(*) as countApp from  DeviceDB.dbo.Firmware where ID = ${parseInt(ApplicationID)}`   
+            const { ID, Name, Data, locallink, Description } = req.body;
+            let sqlString
+            if(Data == null) {
+                sqlString  = `
+                SET IDENTITY_INSERT  DeviceDB.dbo.Firmware ON;
+    
+                INSERT INTO DeviceDB.dbo.Firmware (ID, Name,Data, LocalLink, Description, CreatedAt, UpdatedAt)
+                VALUES ( ${parseInt(ID)},'${Name}', ${Data},'${locallink}','${Description}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    
+                SET IDENTITY_INSERT  DeviceDB.dbo.Firmware OFF;
+    
+                `
+            }else {
+                sqlString  = `
+                SET IDENTITY_INSERT  DeviceDB.dbo.Firmware ON;
+    
+                INSERT INTO DeviceDB.dbo.Firmware (ID, Name,Data, LocalLink, Description, CreatedAt, UpdatedAt)
+                VALUES ( ${parseInt(ID)},'${Name}', '${Data}','${locallink}','${Description}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    
+                SET IDENTITY_INSERT  DeviceDB.dbo.Firmware OFF;
+    
+                `
+            }
             const request = new db.sql.Request();
-            request.query(sqlStringCheckAppli, (err,data) => {
+            request.query(sqlString, (err,data) => {
                 if(err) {
-                    res.status(404).json({
+                    res.status(402).json({
                         success: false,
                         err
                     })
-                } else if(data) {
-                    let sqlString
-                    if(data.recordset[0].countApp >= 1) {
-                        sqlString  = `
-                        
-                        SET IDENTITY_INSERT  DeviceDB.dbo.Firmware ON;
-
-                        INSERT INTO DeviceDB.dbo.Device (ID, MAC, Name, AppID, Description, CreatedTime, UpdatedAt)
-                        VALUES ( ${parseInt(ID)},'${Mac}','${Name}',${parseInt(ApplicationID)},'${Description}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-
-                        SET IDENTITY_INSERT  DeviceDB.dbo.Firmware OFF;
-                        `
-                    } else {
-                        sqlString  = `
-                        
-                        SET IDENTITY_INSERT  DeviceDB.dbo.Firmware ON;
-
-                        INSERT INTO DeviceDB.dbo.Device (ID, MAC, Name, AppID, Description, CreatedTime, UpdatedAt)
-                        VALUES ( ${parseInt(ID)},'${Mac}','${Name}', NULL ,'${Description}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-
-                  
-                        SET IDENTITY_INSERT  DeviceDB.dbo.Firmware OFF;
-                        `
-                    }
-                    request.query(sqlString, (err,data) => {
-                        if(err) {
-                            res.status(402).json({
-                                success: false,
-                                err
-                            })
-                        }
-                        res.status(202).json(data)
-                    })
                 }
+                res.status(202).json(data)
             })
         } catch(error) {
             res.status(403).json({
@@ -106,7 +95,6 @@ class Firmware {
                 }
 
             }
-
             const request = new db.sql.Request();
             request.query(sqlString, (err, data) => {
                 if (err) {
@@ -126,23 +114,23 @@ class Firmware {
 
     async updateFirmware(req,res) {
         try {
-            const {ID,Mac,Name,ApplicationID,Description} = req.body
-            console.log(ID,Mac,Name,ApplicationID,Description)
+            const {ID,Name,Data,LocalLink,Description} = req.body
+            console.log({ID,Name,Data,LocalLink,Description})
             let sqlString
-            if(ApplicationID) {
+            if(Data == null) {
                 sqlString = `
                 UPDATE  DeviceDB.dbo.Firmware
-    
-                SET MAC = '${Mac}',Name = '${Name}',AppID = ${parseInt(ApplicationID)}, Description = '${Description}', UpdatedAt = CURRENT_TIMESTAMP
-    
-                WHERE ID = ${ID}`
+
+                SET Name = '${Name}', Data = NULL, LocalLink='${LocalLink}', Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
+                WHERE ID = ${ID}
+                `
             } else {
                 sqlString = `
-                UPDATE DeviceDB.dbo.Device
-    
-                SET MAC = '${Mac}',Name = '${Name}',AppID = NULL, Description = '${Description}', UpdatedAt = CURRENT_TIMESTAMP
-    
-                WHERE ID = ${ID}`
+                    UPDATE  DeviceDB.dbo.Firmware
+
+                    SET Name = '${Name}', Data = '${Data}', LocalLink='${LocalLink}', Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
+
+                    WHERE ID = ${ID}`
             }
             const request = new db.sql.Request();
             request.query(sqlString, (err, data) => {

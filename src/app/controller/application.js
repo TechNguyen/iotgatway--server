@@ -23,9 +23,10 @@ class Application {
     }
     async createOneApplication(req,res) {
         try {
- 
-            // const sqlString = `INSERT INTO DeviceDB.dbo.Device VALUES(${ID},${Mac},${Name},${ApplicationID},${Description})`
+            const  {ID,Name,FirmID, Version, Descxription} = req.body
+            const sqlString = `INSERT INTO DeviceDB.dbo.Application VALUES(${parseInt(ID)},'${Name}',${parseInt(FirmID)},${parseInt(Version)},'${Description}')`
             const request = db.sql.Request();
+            console.log(sqlString);
             request.query(sqlStringCheckAppli, (err,data) => {
                 if(err) {
                     res.status(403).json({
@@ -74,7 +75,7 @@ class Application {
                 }
 
             }
-
+            console.log(sqlString);
             const request = new db.sql.Request();
             request.query(sqlString, (err, data) => {
                 if (err) {
@@ -94,21 +95,20 @@ class Application {
 
     async updateApplication(req,res) {
         try {
-            const {ID,Mac,Name,ApplicationID,Description} = req.body
-            console.log(ID,Mac,Name,ApplicationID,Description)
+            const {ID, Name, FirmID, Version ,Description} = req.body
             let sqlString
-            if(ApplicationID) {
+            if(FirmID) {
                 sqlString = `
                 UPDATE  DeviceDB.dbo.Application
     
-                SET MAC = '${Mac}',Name = '${Name}',AppID = ${parseInt(ApplicationID)}, Description = '${Description}', UpdatedAt = CURRENT_TIMESTAMP
+                SET Name = N'${Name}',Version = ${parseInt(Version)}, Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
     
                 WHERE ID = ${ID}`
             } else {
                 sqlString = `
                 UPDATE DeviceDB.dbo.Application
     
-                SET MAC = '${Mac}',Name = '${Name}',AppID = NULL, Description = '${Description}', UpdatedAt = CURRENT_TIMESTAMP
+                SET Name = N'${Name}',Version = ${parseInt(Version)}, Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
     
                 WHERE ID = ${ID}`
             }
@@ -126,6 +126,13 @@ class Application {
         }
     }
 
+    async uploadFile(req,res) {
+        try {
+            console.log(req.file)
+        } catch(error){
+
+        }
+    }
 }
 
 
