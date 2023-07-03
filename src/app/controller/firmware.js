@@ -1,5 +1,7 @@
 const {multitoObject,mongoosetoObject } = require('../../ultis/convert')
 const db = require('../../config/database/index')
+const multer = require('multer')
+const upload = multer({storage: multer.memoryStorage(), dest: './public/uploads/'})
 class Firmware {
     async getAllFirmware(req,res) {
         try {
@@ -23,14 +25,15 @@ class Firmware {
     }
     async createOneFirmware(req,res) {
         try {
-            const { ID, Name, Data, locallink, Description } = req.body;
+            const { ID, Name, Data, Description } = req.body;
+            console.log({ ID, Name, Data, Description });
             let sqlString
             if(Data == null) {
                 sqlString  = `
                 SET IDENTITY_INSERT  DeviceDB.dbo.Firmware ON;
     
-                INSERT INTO DeviceDB.dbo.Firmware (ID, Name,Data, LocalLink, Description, CreatedAt, UpdatedAt)
-                VALUES ( ${parseInt(ID)},'${Name}', ${Data},'${locallink}','${Description}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+                INSERT INTO DeviceDB.dbo.Firmware (ID, Name,Data, Description, CreatedAt, UpdatedAt)
+                VALUES ( ${parseInt(ID)},'${Name}', ${Data}, N'${Description}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
     
                 SET IDENTITY_INSERT  DeviceDB.dbo.Firmware OFF;
     
@@ -39,8 +42,8 @@ class Firmware {
                 sqlString  = `
                 SET IDENTITY_INSERT  DeviceDB.dbo.Firmware ON;
     
-                INSERT INTO DeviceDB.dbo.Firmware (ID, Name,Data, LocalLink, Description, CreatedAt, UpdatedAt)
-                VALUES ( ${parseInt(ID)},'${Name}', '${Data}','${locallink}','${Description}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+                INSERT INTO DeviceDB.dbo.Firmware (ID, Name,Data, Description, CreatedAt, UpdatedAt)
+                VALUES ( ${parseInt(ID)},'${Name}','${Data}',N'${Description}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
     
                 SET IDENTITY_INSERT  DeviceDB.dbo.Firmware OFF;
     
@@ -114,21 +117,20 @@ class Firmware {
 
     async updateFirmware(req,res) {
         try {
-            const {ID,Name,Data,LocalLink,Description} = req.body
-            console.log({ID,Name,Data,LocalLink,Description})
+            const {ID,Name,Data,Description} = req.body
             let sqlString
             if(Data == null) {
                 sqlString = `
                 UPDATE  DeviceDB.dbo.Firmware
 
-                SET Name = '${Name}', Data = NULL, LocalLink='${LocalLink}', Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
+                SET Name = '${Name}', Data = NULL, Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
                 WHERE ID = ${ID}
                 `
             } else {
                 sqlString = `
                     UPDATE  DeviceDB.dbo.Firmware
 
-                    SET Name = '${Name}', Data = '${Data}', LocalLink='${LocalLink}', Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
+                    SET Name = '${Name}', Data = '${Data}', Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
 
                     WHERE ID = ${ID}`
             }
@@ -146,7 +148,27 @@ class Firmware {
         }
     }
 
-
+    async uploadFile(req,res) {
+        try {
+            const path = req.file.path
+            const ID = req.body.ID
+            let  sqlString = `UPDATE  DeviceDB.dbo.Firmware
+            SET LocalLink = N'${path}', UpdatedAt = CURRENT_TIMESTAMP
+            WHERE ID = ${ID}`
+            const request = new db.sql.Request()
+            request.query(sqlString, (err,data) => {
+                if(err) {
+                    res.status(403).json(err)
+                }
+                res.status(201).json(data)
+            })
+        }catch(error) {
+            res.status(403).json({
+                success: false,
+                error
+            })
+        }
+    }
 }
 
 
