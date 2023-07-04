@@ -5,7 +5,7 @@ const upload = multer({storage: multer.memoryStorage(), dest: './public/uploads/
 class Firmware {
     async getAllFirmware(req,res) {
         try {
-            const sqlString = 'SELECT * FROM DeviceDB.dbo.Firmware';
+            const sqlString = 'SELECT * FROM IoT.dbo.Firmware';
             const request = new db.sql.Request();
             request.query(sqlString, (err, data) => {
                 if(err) {
@@ -17,7 +17,7 @@ class Firmware {
                 res.status(201).json(data.recordset)
             });
         } catch(error) {
-            res.status(403).json({
+            res.status(404).json({
                 success: false,  
                 message: error
             })
@@ -30,22 +30,22 @@ class Firmware {
             let sqlString
             if(Data == null) {
                 sqlString  = `
-                SET IDENTITY_INSERT  DeviceDB.dbo.Firmware ON;
+                SET IDENTITY_INSERT  IoT.dbo.Firmware ON;
     
-                INSERT INTO DeviceDB.dbo.Firmware (ID, Name,Data, Description, CreatedAt, UpdatedAt)
+                INSERT INTO IoT.dbo.Firmware (ID, Name,Data, Description, CreatedAt, UpdatedAt)
                 VALUES ( ${parseInt(ID)},'${Name}', ${Data}, N'${Description}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
     
-                SET IDENTITY_INSERT  DeviceDB.dbo.Firmware OFF;
+                SET IDENTITY_INSERT  IoT.dbo.Firmware OFF;
     
                 `
             }else {
                 sqlString  = `
-                SET IDENTITY_INSERT  DeviceDB.dbo.Firmware ON;
+                SET IDENTITY_INSERT  IoT.dbo.Firmware ON;
     
-                INSERT INTO DeviceDB.dbo.Firmware (ID, Name,Data, Description, CreatedAt, UpdatedAt)
+                INSERT INTO IoT.dbo.Firmware (ID, Name,Data, Description, CreatedAt, UpdatedAt)
                 VALUES ( ${parseInt(ID)},'${Name}','${Data}',N'${Description}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
     
-                SET IDENTITY_INSERT  DeviceDB.dbo.Firmware OFF;
+                SET IDENTITY_INSERT  IoT.dbo.Firmware OFF;
     
                 `
             }
@@ -70,8 +70,10 @@ class Firmware {
     async deleteOneFirmware(req,res) {
         try {
             const {ID} = req.body;
-            const sqlString = `DELETE FROM  DeviceDB.dbo.Firmware WHERE ID = ${parseInt(ID)}`
+            console.log(ID);
+            const sqlString = `DELETE FROM  IoT.dbo.Firmware WHERE ID = ${ID}`
             const request = new db.sql.Request();
+
             request.query(sqlString, (err, data) => {
                 if (err) {
                     res.status(403).json(err)
@@ -89,7 +91,7 @@ class Firmware {
     async deleteManyFirmware(req,res) {
         try {
             const selectedRowKeys = req.body;
-            let sqlString = `DELETE FROM  DeviceDB.dbo.Firmware WHERE `
+            let sqlString = `DELETE FROM  IoT.dbo.Firmware WHERE `
             for(let i = 0; i < selectedRowKeys.length; i++) {
                 if(i == selectedRowKeys.length - 1) {
                     sqlString += `ID = ${selectedRowKeys[i]}`
@@ -121,14 +123,14 @@ class Firmware {
             let sqlString
             if(Data == null) {
                 sqlString = `
-                UPDATE  DeviceDB.dbo.Firmware
+                UPDATE  IoT.dbo.Firmware
 
                 SET Name = '${Name}', Data = NULL, Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
                 WHERE ID = ${ID}
                 `
             } else {
                 sqlString = `
-                    UPDATE  DeviceDB.dbo.Firmware
+                    UPDATE  IoT.dbo.Firmware
 
                     SET Name = '${Name}', Data = '${Data}', Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
 
@@ -137,7 +139,9 @@ class Firmware {
             const request = new db.sql.Request();
             request.query(sqlString, (err, data) => {
                 if (err) {
-                    res.status(403).json(err)
+                    res.status(403).json({
+                        message: 'Can not'
+                    })
                 }
                 res.status(202).json(data)
             })
@@ -152,7 +156,7 @@ class Firmware {
         try {
             const path = req.file.path
             const ID = req.body.ID
-            let  sqlString = `UPDATE  DeviceDB.dbo.Firmware
+            let  sqlString = `UPDATE  IoT.dbo.Firmware
             SET LocalLink = N'${path}', UpdatedAt = CURRENT_TIMESTAMP
             WHERE ID = ${ID}`
             const request = new db.sql.Request()
