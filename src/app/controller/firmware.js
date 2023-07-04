@@ -26,29 +26,30 @@ class Firmware {
     async createOneFirmware(req,res) {
         try {
             const { ID, Name, Data, Description } = req.body;
-            console.log({ ID, Name, Data, Description });
-            let sqlString
-            if(Data == null) {
+            console.log( req.body);
+            let sqlString;
+            if(Data == '' || Data == null) {
                 sqlString  = `
-                SET IDENTITY_INSERT  IoT.dbo.Firmware ON;
-    
-                INSERT INTO IoT.dbo.Firmware (ID, Name,Data, Description, CreatedAt, UpdatedAt)
-                VALUES ( ${parseInt(ID)},'${Name}', ${Data}, N'${Description}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-    
-                SET IDENTITY_INSERT  IoT.dbo.Firmware OFF;
+                SET IDENTITY_INSERT IoT.dbo.Firmware ON;
+                
+                INSERT INTO IoT.dbo.Firmware(ID,Name,Data,LocalLink,Description,CreatedAt,UpdatedAt) VALUES (${Number.isInteger(Number(ID)) && Number(ID) > 0 ? Number(ID) : null},'${Name}',null,null,N'${Description}',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP);
+
+                SET IDENTITY_INSERT IoT.dbo.Firmware OFF;
     
                 `
             }else {
                 sqlString  = `
-                SET IDENTITY_INSERT  IoT.dbo.Firmware ON;
+                SET IDENTITY_INSERT IoT.dbo.Firmware ON;
     
-                INSERT INTO IoT.dbo.Firmware (ID, Name,Data, Description, CreatedAt, UpdatedAt)
-                VALUES ( ${parseInt(ID)},'${Name}','${Data}',N'${Description}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+                INSERT INTO IoT.dbo.Firmware(ID,Name,Data,LocalLink,Description,CreatedAt,UpdatedAt)
+                VALUES (${Number.isInteger(Number(ID)) && Number(ID) > 0 ? Number(ID) : null},'${Name},'${null}',null,N'${Description}',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP);
     
                 SET IDENTITY_INSERT  IoT.dbo.Firmware OFF;
-    
+
                 `
             }
+
+            console.log(sqlString);
             const request = new db.sql.Request();
             request.query(sqlString, (err,data) => {
                 if(err) {
@@ -91,7 +92,7 @@ class Firmware {
     async deleteManyFirmware(req,res) {
         try {
             const selectedRowKeys = req.body;
-            let sqlString = `DELETE FROM  IoT.dbo.Firmware WHERE `
+            let sqlString = `DELETE FROM IoT.dbo.Firmware WHERE `
             for(let i = 0; i < selectedRowKeys.length; i++) {
                 if(i == selectedRowKeys.length - 1) {
                     sqlString += `ID = ${selectedRowKeys[i]}`
@@ -121,22 +122,23 @@ class Firmware {
         try {
             const {ID,Name,Data,Description} = req.body
             let sqlString
-            if(Data == null) {
+            if(Data == '' || Data == null) {
                 sqlString = `
                 UPDATE  IoT.dbo.Firmware
 
-                SET Name = '${Name}', Data = NULL, Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
+                SET Name = N'${Name}', Data = NULL, Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
                 WHERE ID = ${ID}
                 `
             } else {
                 sqlString = `
                     UPDATE  IoT.dbo.Firmware
 
-                    SET Name = '${Name}', Data = '${Data}', Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
+                    SET Name = N'${Name}', Data = '${Data}', Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
 
                     WHERE ID = ${ID}`
             }
             const request = new db.sql.Request();
+
             request.query(sqlString, (err, data) => {
                 if (err) {
                     res.status(403).json({
@@ -156,7 +158,10 @@ class Firmware {
         try {
             const path = req.file.path
             const ID = req.body.ID
-            let  sqlString = `UPDATE  IoT.dbo.Firmware
+            const fileData = req.file.buffer;
+            console.log(fileData);
+            let  sqlString =
+            `UPDATE  IoT.dbo.Firmware
             SET LocalLink = N'${path}', UpdatedAt = CURRENT_TIMESTAMP
             WHERE ID = ${ID}`
             const request = new db.sql.Request()

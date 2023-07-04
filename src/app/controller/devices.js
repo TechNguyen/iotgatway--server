@@ -9,7 +9,6 @@ class Device {
             request.query(sqlString, (err, datadevices) => {
                 if(err) {
                     res.status(403).json({
-                        success: false,
                         message: err
                     })
                 }
@@ -17,7 +16,6 @@ class Device {
             });
         } catch(error) {
             res.status(403).json({
-                success: false,
                 message: error
             })
         }
@@ -25,7 +23,6 @@ class Device {
     async createOneDevices(req,res) {
         try {
             const {  ID, Mac, LocalIp, Name, ApplicationID, ODO, Description, StatusID} = req.body;
-            console.log({ ID, Mac, LocalIp, Name, ApplicationID, ODO, Description, StatusID});
             const sqlString =  `    
             SET IDENTITY_INSERT IoT.dbo.Device ON;
 

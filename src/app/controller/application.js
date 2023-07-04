@@ -8,8 +8,7 @@ class Application {
             request.query(sqlString, (err, data) => {
                 if(err) {
                     res.status(403).json({
-                        success: false,
-                        message: err
+                        message: 'Not found Application from server'
                     })
                 }
                 res.status(201).json(data.recordset)
@@ -23,15 +22,21 @@ class Application {
     }
     async createOneApplication(req,res) {
         try {
-            const  {ID,Name,FirmID, Version, Descxription} = req.body
-            const sqlString = `INSERT INTO IoT.dbo.Application VALUES(${parseInt(ID)},'${Name}',${parseInt(FirmID)},${parseInt(Version)},'${Description}')`
-            const request = db.sql.Request();
-            console.log(sqlString);
-            request.query(sqlStringCheckAppli, (err,data) => {
+            const  {ID,Name,FirmID, Version, Description} = req.body
+            let sqlString = `
+
+            SET IDENTITY_INSERT IoT.dbo.Application ON;
+
+            INSERT INTO IoT.dbo.Application (ID,NAME,FirmwareID,Version,Description,CreatedTime,UpdateTime) VALUES(${Number.isInteger(Number(ID)) && Number(ID) > 0 ? Number(ID) : null},N'${Name}',${Number.isInteger(Number(FirmID)) && Number(FirmID) > 0 ? Number(FirmID) : null},${Number.isInteger(Number(Version)) && Number(Version) > 0 ? Number(Version) : null},N'${Description}',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
+    
+            SET IDENTITY_INSERT IoT.dbo.Application OFF;  
+
+            `
+            const request = new db.sql.Request();
+            request.query(sqlString, (err,data) => {
                 if(err) {
                     res.status(403).json({
-                        success: false,
-                        message: err
+                        message: 'Not found Firmware. You must create Firmware before'
                     })
                 }
                 res.status(200).json(data)
@@ -48,6 +53,8 @@ class Application {
         try {
             const {ID} = req.body;
             const sqlString = `DELETE FROM IoT.dbo.Application WHERE ID = ${parseInt(ID)}`
+
+            console.log(sqlString);
             const request = new db.sql.Request();
             request.query(sqlString, (err, data) => {
                 if (err) {
@@ -95,22 +102,15 @@ class Application {
     async updateApplication(req,res) {
         try {
             const {ID, Name, FirmID, Version ,Description} = req.body
-            let sqlString
-            if(FirmID) {
-                sqlString = `
-                UPDATE  IoT.dbo.Application
-    
-                SET Name = N'${Name}',Version = ${parseInt(Version)}, Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
-    
-                WHERE ID = ${ID}`
-            } else {
-                sqlString = `
-                UPDATE IoT.dbo.Application
-    
-                SET Name = N'${Name}',Version = ${parseInt(Version)}, Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
-    
-                WHERE ID = ${ID}`
-            }
+            let sqlString = `
+            UPDATE IoT.dbo.Application
+
+            SET Name = N'${Name}', FirmwareID = ${Number.isInteger(Number(FirmID)) && Number(FirmID) > 0 ? Number(FirmID) : null},Version = ${Number.isInteger(Number(Version)) && Number(Version) > 0 ? Number(Version) : null},Description = N'${Description}', UpdateTime = CURRENT_TIMESTAMP
+
+            WHERE ID = ${ID}`
+
+
+            console.log(sqlString);
             const request = new db.sql.Request();
             request.query(sqlString, (err, data) => {
                 if (err) {
@@ -122,14 +122,6 @@ class Application {
             res.status(403).json({
                 success: false,
             })
-        }
-    }
-
-    async uploadFile(req,res) {
-        try {
-            console.log(req.file)
-        } catch(error){
-
         }
     }
 }
