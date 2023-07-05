@@ -54,7 +54,6 @@ class Application {
             const {ID} = req.body;
             const sqlString = `DELETE FROM IoT.dbo.Application WHERE ID = ${parseInt(ID)}`
 
-            console.log(sqlString);
             const request = new db.sql.Request();
             request.query(sqlString, (err, data) => {
                 if (err) {
@@ -110,7 +109,6 @@ class Application {
             WHERE ID = ${ID}`
 
 
-            console.log(sqlString);
             const request = new db.sql.Request();
             request.query(sqlString, (err, data) => {
                 if (err) {

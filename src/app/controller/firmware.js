@@ -1,7 +1,6 @@
 const {multitoObject,mongoosetoObject } = require('../../ultis/convert')
 const db = require('../../config/database/index')
-const multer = require('multer')
-const upload = multer({storage: multer.memoryStorage(), dest: './public/uploads/'})
+const fs = require('fs')
 class Firmware {
     async getAllFirmware(req,res) {
         try {
@@ -25,31 +24,16 @@ class Firmware {
     }
     async createOneFirmware(req,res) {
         try {
-            const { ID, Name, Data, Description } = req.body;
-            console.log( req.body);
-            let sqlString;
-            if(Data == '' || Data == null) {
-                sqlString  = `
-                SET IDENTITY_INSERT IoT.dbo.Firmware ON;
-                
-                INSERT INTO IoT.dbo.Firmware(ID,Name,Data,LocalLink,Description,CreatedAt,UpdatedAt) VALUES (${Number.isInteger(Number(ID)) && Number(ID) > 0 ? Number(ID) : null},'${Name}',null,null,N'${Description}',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP);
-
-                SET IDENTITY_INSERT IoT.dbo.Firmware OFF;
-    
-                `
-            }else {
-                sqlString  = `
+            const { ID, Name, Description } = req.body;
+            let sqlString  = `
                 SET IDENTITY_INSERT IoT.dbo.Firmware ON;
     
                 INSERT INTO IoT.dbo.Firmware(ID,Name,Data,LocalLink,Description,CreatedAt,UpdatedAt)
-                VALUES (${Number.isInteger(Number(ID)) && Number(ID) > 0 ? Number(ID) : null},'${Name},'${null}',null,N'${Description}',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP);
+                VALUES (${Number.isInteger(Number(ID)) && Number(ID) > 0 ? Number(ID) : null},N'${Name}',null,null,N'${Description}',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP);
     
                 SET IDENTITY_INSERT  IoT.dbo.Firmware OFF;
 
                 `
-            }
-
-            console.log(sqlString);
             const request = new db.sql.Request();
             request.query(sqlString, (err,data) => {
                 if(err) {
@@ -120,23 +104,16 @@ class Firmware {
 
     async updateFirmware(req,res) {
         try {
-            const {ID,Name,Data,Description} = req.body
-            let sqlString
-            if(Data == '' || Data == null) {
-                sqlString = `
+            const {ID,Name,Description} = req.body
+
+            console.log(ID,Name,Description);
+            let sqlString = `
                 UPDATE  IoT.dbo.Firmware
 
-                SET Name = N'${Name}', Data = NULL, Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
+                SET Name = N'${Name}',Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
                 WHERE ID = ${ID}
                 `
-            } else {
-                sqlString = `
-                    UPDATE  IoT.dbo.Firmware
 
-                    SET Name = N'${Name}', Data = '${Data}', Description = N'${Description}', UpdatedAt = CURRENT_TIMESTAMP
-
-                    WHERE ID = ${ID}`
-            }
             const request = new db.sql.Request();
 
             request.query(sqlString, (err, data) => {
@@ -158,13 +135,15 @@ class Firmware {
         try {
             const path = req.file.path
             const ID = req.body.ID
-            const fileData = req.file.buffer;
-            console.log(fileData);
+            const content = fs.readFileSync(path)
+            const varbinary = Buffer.from(content, req.file.encoding);
+            const request = new db.sql.Request()
             let  sqlString =
             `UPDATE  IoT.dbo.Firmware
-            SET LocalLink = N'${path}', UpdatedAt = CURRENT_TIMESTAMP
+            SET Data = 0x${varbinary.toString('hex')}, LocalLink = N'${path}', UpdatedAt = CURRENT_TIMESTAMP
             WHERE ID = ${ID}`
-            const request = new db.sql.Request()
+
+
             request.query(sqlString, (err,data) => {
                 if(err) {
                     res.status(403).json(err)

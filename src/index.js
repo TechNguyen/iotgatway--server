@@ -30,11 +30,8 @@ app.use(cookParser())
 
 
 app.use(cors())
-
-
-
 app.get('/', (req, res) => {
-  res.send('Hello world')
+  res.send('IoT-Server')
 })
 // Routers
 route(app);
