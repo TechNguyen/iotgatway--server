@@ -4,12 +4,22 @@ const fs = require('fs')
 class Firmware {
     async getAllFirmware(req,res) {
         try {
-            const sqlString = 'SELECT * FROM IoT.dbo.Firmware';
+            const curent = req.query.curent
+            const pageSize = req.query.pageSize
+            // const sqlString = `
+            // SELECT ID,Name,LocalLink,Description,CreatedAt,UpdatedAt
+            // FROM (
+            //     SELECT ROW_NUMBER() OVER (ORDER BY ID) AS RowNumber, *
+            //     FROM IoT.dbo.Firmware
+            // ) AS t
+            // WHERE RowNumber BETWEEN (${parseInt(curent)} - 1) * ${parseInt(pageSize)} + 1 AND ${parseInt(curent)} * ${parseInt(pageSize)}`;
+            const  sqlString = `
+            SELECT ID,Name,LocalLink,Description,CreatedAt,UpdatedAt FROM IoT.dbo.Firmware
+            `
             const request = new db.sql.Request();
             request.query(sqlString, (err, data) => {
                 if(err) {
                     res.status(403).json({
-                        success: false,
                         message: err
                     })
                 }
@@ -55,8 +65,9 @@ class Firmware {
     async deleteOneFirmware(req,res) {
         try {
             const {ID} = req.body;
-            console.log(ID);
-            const sqlString = `DELETE FROM  IoT.dbo.Firmware WHERE ID = ${ID}`
+            const sqlString = `DELETE FROM  IoT.dbo.Firmware WHERE ID = ${ID}
+            Go 
+            `
             const request = new db.sql.Request();
 
             request.query(sqlString, (err, data) => {
@@ -106,7 +117,6 @@ class Firmware {
         try {
             const {ID,Name,Description} = req.body
 
-            console.log(ID,Name,Description);
             let sqlString = `
                 UPDATE  IoT.dbo.Firmware
 
@@ -138,17 +148,51 @@ class Firmware {
             const content = fs.readFileSync(path)
             const varbinary = Buffer.from(content, req.file.encoding);
             const request = new db.sql.Request()
-            let  sqlString =
-            `UPDATE  IoT.dbo.Firmware
-            SET Data = 0x${varbinary.toString('hex')}, LocalLink = N'${path}', UpdatedAt = CURRENT_TIMESTAMP
-            WHERE ID = ${ID}`
 
-
-            request.query(sqlString, (err,data) => {
+            let checkFirm = `
+            SELECT COUNT(*) as countFile FROM IoT.dbo.fileFirm Where ID = ${Number.isInteger(Number(ID)) && Number(ID) > 0 ? Number(ID) : null}
+            `
+            request.query(checkFirm, (err,data) => {
                 if(err) {
-                    res.status(403).json(err)
+                    res.status(400).json({
+                        message: err
+                    })
                 }
-                res.status(201).json(data)
+                else {
+                    const file = data.recordset[0]
+                    let sqlStringToFile
+                    if(file.countFile == 0) {
+                        sqlStringToFile = `
+                        INSERT INTO IoT.dbo.fileFirm (ID,data) VALUES (${Number.isInteger(Number(ID)) && Number(ID) > 0 ? Number(ID) : null}, 0x${varbinary.toString('hex')})
+                        `
+                    } else {
+                        sqlStringToFile = `
+                        UPDATE IoT.dbo.fileFirm
+                        SET data = 0x${varbinary.toString('hex')} 
+                        where ID = ${Number(ID)}
+                        `
+                    }
+                    request.query(sqlStringToFile, (err,data) => {
+                        if(err) {
+                            res.status(404).json({
+                                message: 'Do not save your file'
+                            })
+                        } else {
+                            let  sqlString =
+                            `UPDATE  IoT.dbo.Firmware
+                            SET DataID = ${Number.isInteger(Number(ID)) && Number(ID) > 0 ? Number(ID) : null},LocalLink = N'${path}',UpdatedAt = CURRENT_TIMESTAMP
+                            WHERE ID = ${Number(ID)}`
+                            request.query(sqlString, (err,data) => {
+                                if(err) {
+                                    res.status(403).json({
+                                        message: 'Error save your file!'
+                                    })
+                                }
+                                res.status(201).json(data)
+                            })
+                        }
+                    })
+                }
             })
         }catch(error) {
             res.status(403).json({

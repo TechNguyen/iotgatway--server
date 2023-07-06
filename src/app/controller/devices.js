@@ -1,6 +1,5 @@
 const {multitoObject,mongoosetoObject } = require('../../ultis/convert')
 const db = require('../../config/database/index');
-const { Numeric } = require('mssql');
 class Device {
     async getAllDevices(req,res) {
         try {
@@ -33,7 +32,6 @@ class Device {
 
             `   
 
-            console.log(sqlString);
             const request = new db.sql.Request();
             request.query(sqlString, (err,data) => {
                 if(err) {
