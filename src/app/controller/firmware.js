@@ -38,12 +38,14 @@ class Firmware {
             let sqlString  = `
                 SET IDENTITY_INSERT IoT.dbo.Firmware ON;
     
-                INSERT INTO IoT.dbo.Firmware(ID,Name,Data,LocalLink,Description,CreatedAt,UpdatedAt)
-                VALUES (${Number.isInteger(Number(ID)) && Number(ID) > 0 ? Number(ID) : null},N'${Name}',null,null,N'${Description}',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP);
+                INSERT INTO IoT.dbo.Firmware(ID,Name,LocalLink,Description,CreatedAt,UpdatedAt,DataID)
+                VALUES (${Number.isInteger(Number(ID)) && Number(ID) > 0 ? Number(ID) : null},N'${Name}',null,N'${Description}',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,null);
     
                 SET IDENTITY_INSERT  IoT.dbo.Firmware OFF;
 
                 `
+
+                console.log(sqlString);
             const request = new db.sql.Request();
             request.query(sqlString, (err,data) => {
                 if(err) {
@@ -65,16 +67,25 @@ class Firmware {
     async deleteOneFirmware(req,res) {
         try {
             const {ID} = req.body;
-            const sqlString = `DELETE FROM  IoT.dbo.Firmware WHERE ID = ${ID}
-            Go 
+            const sqlString = `
+            DELETE FROM IoT.dbo.fileFirm Where ID = ${ID}
             `
             const request = new db.sql.Request();
-
             request.query(sqlString, (err, data) => {
                 if (err) {
                     res.status(403).json(err)
+                }else {
+                    const sqlStringDelteFirm =  `DELETE FROM  IoT.dbo.Firmware WHERE ID = ${ID}`
+                    request.query(sqlStringDelteFirm, (err,data) => {
+                        if(err) {
+                            res.status(403).json({
+                                message: 'Error'
+                            })
+                        } else {
+                            res.status(200).json(data)
+                        }
+                    })
                 }
-                res.status(202).json(data)
             })
         } catch(error) {
             res.status(403).json({
@@ -94,14 +105,28 @@ class Firmware {
                 } else {
                     sqlString += `ID = ${selectedRowKeys[i]} OR `
                 }
-
             }
             const request = new db.sql.Request();
             request.query(sqlString, (err, data) => {
                 if (err) {
                     res.status(403).json(err)
                 }
-                res.status(202).json(data)
+                else {           
+                    let sqlStringData = `DELETE FROM IoT.dbo.fileFirm WHERE `
+                    for(let i = 0; i < selectedRowKeys.length; i++) {
+                        if(i == selectedRowKeys.length - 1) {
+                            sqlStringData += `ID = ${selectedRowKeys[i]}`
+                        } else {
+                            sqlStringData += `ID = ${selectedRowKeys[i]} OR `
+                        }
+                    }
+                    request.query(sqlStringData, (err,data) => {
+                        if (err) {
+                            res.status(403).json(err)
+                        }
+                        res.status(200).json(data)
+                    })
+                }
             })
         } catch(error) {
             res.status(403).json({
