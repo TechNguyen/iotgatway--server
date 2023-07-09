@@ -37,8 +37,6 @@ class Authen {
                         },  process.env.JWT_SECRET, {
                                 expiresIn: process.env.JWT_EXPIRES_IN
                         })
-
-                        console.log(token);
                         account.token = token
                         account.password = undefined
                         const options = {

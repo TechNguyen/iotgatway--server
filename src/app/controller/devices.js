@@ -10,8 +10,9 @@ class Device {
                     res.status(403).json({
                         message: err
                     })
+                } else {
+                    res.status(201).json(datadevices.recordset)
                 }
-                res.status(201).json(datadevices.recordset)
             });
         } catch(error) {
             res.status(403).json({
@@ -104,10 +105,12 @@ class Device {
             let sqlString  = `
                 UPDATE IoT.dbo.Device
     
-                SET MAC = N'${Mac}',LocalIp = N'${LocalIp}',Name = N'${Name}', AppID = ${(Number.isInteger(Number(ApplicationID)) && Number(ApplicationID) != 0 ) ? Number(ApplicationID) : null} , ODO = ${(Number.isInteger(Number(ODO)) && Number(ODO) != 0) ? Number(ODO) : null}, Description = N'${Description}', StatusID= ${(Number.isInteger(Number(StatusID)) && Number(StatusID) != 0) ? Number(StatusID) : null}, UpdateTime = CURRENT_TIMESTAMP
+                SET MAC = N'${Mac}',LocalIp = N'${LocalIp}',Name = N'${Name}', AppID = ${(Number.isInteger(Number(ApplicationID)) && Number(ApplicationID) != 0 ) ? Number(ApplicationID) : null} , ODO = ${(Number.isInteger(Number(ODO)) && Number(ODO) != 0) ? Number(ODO) : null}, Description = N'${Description}', StatusID= ${(Number.isInteger(Number(StatusID)) && Number(StatusID) != 0) ? Number(StatusID) : null}, UpdatetedTime = CURRENT_TIMESTAMP
     
                 WHERE ID = ${ID}`
             const request = new db.sql.Request();
+
+            console.log(sqlString);
             request.query(sqlString, (err, data) => {
                 if (err) {
                     res.status(400).json({

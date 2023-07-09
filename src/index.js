@@ -10,8 +10,10 @@ const route = require("./router");
 const db = require("./config/database");
 const bodyParser = require('body-parser')
 const cookParser = require('cookie-parser')
+const {Server} = require("socket.io")
 const server = http.createServer(app);
-const cors = require('cors')
+const cors = require('cors');
+const dataDevices = require('./socket/dataDevices');
 // Connect database
 
 db.connect();
@@ -35,7 +37,22 @@ app.get('/', (req, res) => {
 })
 // Routers
 route(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["Get","Post"]
+  }
+})
 
+io.on("connection", (socket) => {
+  //   const dataDevice = dataDevices;
+  // console.log(dataDevice.data);
+  // setInterval(() => {
+  //   const dataDevice = dataDevices.getAllDevices
+  //   console.log(dataDevice);
+  //   socket.emit('get_device', dataDevice)  
+  // }, 1000)
+})
 server.listen(port, () => {
   console.log(`http:${port}`);
 });
