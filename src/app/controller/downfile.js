@@ -17,13 +17,14 @@ class downfile{
                     })
                 }else {
                     const pathfile = data.recordset[0].path
-                    const filePath = appRoot.path +'\\' + path.join(pathfile);
+                    const filename = pathfile.slice(17)
+                    const filePath = path.join(appRoot.path, pathfile);
                     const stat = fs.statSync(filePath)
                     res.writeHead(200, {
                         'Content-Type': 'application/octet-stream',
                         'Content-Length': stat.size,
-                        'Content-Disposition': 'attachment'
-                    })
+                        'Content-Disposition': `attachment; filename=${filename}`,
+                      });
                     const readStream = fs.createReadStream(filePath)
                     readStream.pipe(res)
                 }
