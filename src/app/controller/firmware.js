@@ -188,12 +188,12 @@ class Firmware {
                     let sqlStringToFile
                     if(file.countFile == 0) {
                         sqlStringToFile = `
-                        INSERT INTO IoT.dbo.fileFirm (ID,data) VALUES (${Number.isInteger(Number(ID)) && Number(ID) > 0 ? Number(ID) : null}, 0x${varbinary.toString('hex')})
+                        INSERT INTO IoT.dbo.fileFirm (ID,data) VALUES (${Number.isInteger(Number(ID)) && Number(ID) > 0 ? Number(ID) : null}, 0x${varbinary.toString('hex')}, '${path}')
                         `
                     } else {
                         sqlStringToFile = `
                         UPDATE IoT.dbo.fileFirm
-                        SET data = 0x${varbinary.toString('hex')} 
+                        SET data = 0x${varbinary.toString('hex')},path = '${path}'
                         where ID = ${Number(ID)}
                         `
                     }

@@ -19,6 +19,7 @@ class iotcheckversion{
                         message: 'Successfullly!',
                          data: {
                             new: data.recordset[0].Message == 'new firmware' ? false : true,
+                            url: `${process.env.URL}/v1/api/firmware/file/${parseInt(fid)}`
                         }
                     });
                 }
