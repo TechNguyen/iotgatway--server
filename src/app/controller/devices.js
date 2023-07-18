@@ -109,8 +109,6 @@ class Device {
     
                 WHERE ID = ${ID}`
             const request = new db.sql.Request();
-
-            console.log(sqlString);
             request.query(sqlString, (err, data) => {
                 if (err) {
                     res.status(400).json({
