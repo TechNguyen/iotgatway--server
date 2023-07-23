@@ -7,18 +7,17 @@ const appRoot = require('app-root-path')
 const jwt = require('jsonwebtoken')
 class downfile{
     async file(req,res) {
-        console.log(new Date().getTime());
         try {
             const token = req.query.token;
-            if(token) {
+            const tokenCheck = jwt.verify(token, process.env.JWT_SECRET)
+            if(tokenCheck) {
                 const tokenCheck = jwt.verify(req.query.token, process.env.JWT_SECRET)
-                const tokenTimeout = new Date(tokenCheck.exp * 1000) 
-                console.log(tokenCheck);
+                const tokenTimeout = tokenCheck.exp * 1000
                 const now = new Date();
-                if(now.getTime() > tokenTimeout.getTime()) {
-                    console.log("token het han");
-                     res.status(401).json({
-                        message: 'Token can be timeout'
+                if(now.getTime() > tokenTimeout) {
+                    console.log('timeout');
+                    res.status(401).json({
+                        message: 'Token is timeout'
                     })
                  } else {
                     const id = tokenCheck.dataIdFile
@@ -42,7 +41,10 @@ class downfile{
                                 res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
                                 const stream = fs.createReadStream(filePath)
                                 stream.pipe(res);
-                                res.json({message: "Success"})
+                                res.status(200).json({
+                                    code: 201,
+                                    message: "Success download file"
+                                })
                             })
                         }}
                     )

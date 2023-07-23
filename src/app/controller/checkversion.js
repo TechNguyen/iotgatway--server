@@ -8,6 +8,8 @@ class iotcheckversion{
             const MAC = req.body.mac
             const sqlString = `EXEC IoT.dbo.sp_fwCheck '${MAC}', ${parseInt(fid)}`
             const request = new db.sql.Request()
+
+            console.log(sqlString);
             request.query(sqlString, (err, data) => {
                 if(err) {
                     res.status(400).json({
